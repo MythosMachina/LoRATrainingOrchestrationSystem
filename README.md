@@ -28,3 +28,10 @@ sudo ./scripts/deploy.sh
 The script installs required CLI tools (Docker, kubectl, helm, kind) and the
 Python `kubernetes` package if they are missing, then provisions the cluster and
 services using Helm charts.
+
+## Images
+
+Use the helper scripts in `scripts/` to build container images:
+
+- `build_orchestrator_image.sh` produces the control-plane image.
+- `build_worker_image.sh` builds a GPU-enabled training image that accepts its configuration via the `JOB_CONFIG` environment variable and can train SD1.5 or SDXL models based on that configuration.
