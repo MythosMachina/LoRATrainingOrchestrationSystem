@@ -1,7 +1,13 @@
 import types
+from pathlib import Path
 from unittest import mock
+import sys
 
-from orchestrator import KubernetesOrchestrator, WorkerSpec
+# Ensure the package root is importable when tests are executed from the tests
+# directory.
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
+from orchestrator import KubernetesOrchestrator, WorkerSpec, VolumeSpec
 
 
 def test_run_worker_lifecycle():
@@ -22,3 +28,21 @@ def test_run_worker_lifecycle():
     batch_api.create_namespaced_job.assert_called_once()
     batch_api.read_namespaced_job.assert_called()
     batch_api.delete_namespaced_job.assert_called_once()
+
+
+def test_spawn_worker_with_volume():
+    batch_api = mock.Mock()
+    orchestrator = KubernetesOrchestrator(batch_api=batch_api)
+    spec = WorkerSpec(
+        name="train-job",
+        image="trainer:latest",
+        volumes=[VolumeSpec(name="data", mount_path="/data", persistent_volume_claim="minio-pvc")],
+    )
+
+    orchestrator.spawn_worker(spec)
+
+    batch_api.create_namespaced_job.assert_called_once()
+    job = batch_api.create_namespaced_job.call_args[0][1]
+    container = job.spec.template.spec.containers[0]
+    assert container.volume_mounts[0].mount_path == "/data"
+    assert job.spec.template.spec.volumes[0].persistent_volume_claim.claim_name == "minio-pvc"
