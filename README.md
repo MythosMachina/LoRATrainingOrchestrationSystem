@@ -14,3 +14,17 @@ orch.run_worker(spec)
 ```
 
 This ensures each worker is created, monitored until it finishes, and then cleaned up.
+
+## Deployment
+
+Run `scripts/deploy.sh` to perform preflight checks, install any missing system
+dependencies, and bootstrap a local Kubernetes cluster with PostgreSQL,
+RabbitMQ, MinIO, and KEDA:
+
+```bash
+sudo ./scripts/deploy.sh
+```
+
+The script installs required CLI tools (Docker, kubectl, helm, kind) and the
+Python `kubernetes` package if they are missing, then provisions the cluster and
+services using Helm charts.
